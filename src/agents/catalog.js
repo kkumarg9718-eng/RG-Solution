@@ -1,0 +1,6 @@
+// Client-safe deterministic agents. Privileged booking/payment operations must be server-authorized.
+export const AGENTS = Object.freeze({triage:'repair-triage',booking:'booking-assistant',dispatch:'technician-dispatch',support:'customer-support',notifications:'notification-planner'});
+export function triageIssue(message=''){const t=message.toLowerCase();const category=/laptop|keyboard|windows|macbook|trackpad/.test(t)?'laptop':/mobile|phone|android|iphone|display/.test(t)?'mobile':null;const urgent=/smoke|swollen|burning|overheat|sparks/.test(t);return {category,urgent,advice:urgent?'Stop using or charging the device; seek qualified assistance.':'A technician should confirm the diagnosis before any price is finalized.'};}
+export function bookingRecommendation({mode='doorstep',category='laptop'}={}){return {mode,category,requiresCustomerConfirmation:true,canWriteBookings:false};}
+export function dispatchRecommendation(booking,technicians=[]){return technicians.filter(t=>t.available&&t.skills?.includes(booking.category)).map(t=>({technicianId:t.id,reason:'Available and qualified'}));}
+export function notificationPlan(booking){return [{event:'booking_requested',channel:'email',bookingId:booking.id,requiresProvider:true}];}
