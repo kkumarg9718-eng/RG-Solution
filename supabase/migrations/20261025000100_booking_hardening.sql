@@ -15,12 +15,15 @@ alter table public.bookings
     and length(regexp_replace(phone, '[^0-9]', '', 'g')) >= 10
   ) not valid;
 
+-- SECURITY DEFINER is required so capacity counts include bookings owned by OTHER customers.
+-- Migration must run as the privileged schema owner; never grant direct RPC access.
 -- Keep the existing capacity trigger name; replacing its function changes behavior
 -- without requiring trigger recreation. Advisory lock serializes competing inserts.
 create or replace function public.enforce_slot_capacity()
 returns trigger
 language plpgsql
-set search_path = public
+security definer
+set search_path = public, pg_temp
 as $$
 declare
   v_count integer;
